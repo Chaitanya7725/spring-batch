@@ -5,6 +5,8 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,21 +14,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class JobLauncherController {
 
     @Autowired
-    JobLauncher jobLauncher;
+    private JobLauncher jobLauncher;
 
     @Autowired
-    Job job;
+    private Job importContactJob;
 
     @PostMapping("/importContacts")
-    public String importCsvToDBJob() {
+    public ResponseEntity<String> importCsvToDBJob() {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("startAt", System.currentTimeMillis()).toJobParameters();
         try {
-            jobLauncher.run(job, jobParameters);
+            jobLauncher.run(importContactJob, jobParameters);
         } catch (Exception e) {
             e.printStackTrace();
-            return "Error importing contacts";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Job failed");
         }
-        return "Contacts import successful";
+        return ResponseEntity.ok("Job started");
     }
 }
